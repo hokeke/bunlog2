@@ -33,7 +33,7 @@ export default function BirdsPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {birds.map((bird) => (
-              <Link key={bird.id} href={`/birds/${bird.id}`}>
+              <Link key={bird.id} href={`/birds/edit?id=${bird.id}`}>
                 <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
                   <CardHeader className="flex flex-row items-center gap-4">
                     <Avatar className="h-12 w-12">
