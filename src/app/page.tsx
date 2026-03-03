@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { WeightChart } from "@/components/dashboard/WeightChart";
 import { FoodChart } from "@/components/dashboard/FoodChart";
@@ -50,9 +51,9 @@ export default function DashboardPage() {
           <p className="text-muted-foreground mb-4">
             まだ文鳥が登録されていません
           </p>
-          <a href="/birds/new" className="text-primary hover:underline">
+          <Link href="/birds/new" className="text-primary hover:underline">
             文鳥を登録する
-          </a>
+          </Link>
         </div>
       </MainLayout>
     );
