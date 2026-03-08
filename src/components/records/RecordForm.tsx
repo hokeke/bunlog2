@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,13 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { recordSchema, RecordFormData } from "@/lib/schemas";
-import { Bird } from "@/types/database";
+import { Bird, Record } from "@/types/database";
 import { format } from "date-fns";
+import { useRecordByDate } from "@/hooks/useRecords";
 
 type RecordFormProps = {
   birds: Bird[];
-  onSubmit: (data: RecordFormData) => Promise<void>;
+  onSubmit: (data: RecordFormData, existingRecordId?: string) => Promise<void>;
   isSubmitting: boolean;
 };
 
@@ -30,6 +32,7 @@ export function RecordForm({ birds, onSubmit, isSubmitting }: RecordFormProps) {
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<RecordFormData>({
     resolver: zodResolver(recordSchema),
@@ -43,13 +46,46 @@ export function RecordForm({ birds, onSubmit, isSubmitting }: RecordFormProps) {
     },
   });
 
+  const selectedBirdId = watch("bird_id");
+  const selectedDate = watch("date");
+
+  const { record: existingRecord, isLoading: isLoadingRecord } = useRecordByDate(
+    selectedBirdId,
+    selectedDate
+  );
+
+  useEffect(() => {
+    if (existingRecord) {
+      setValue("weight", existingRecord.weight);
+      setValue("food_amount", existingRecord.food_amount);
+      setValue("droppings_count", existingRecord.droppings_count);
+      setValue("memo", existingRecord.memo);
+    } else if (selectedBirdId && selectedDate && !isLoadingRecord) {
+      setValue("weight", 25);
+      setValue("food_amount", 5);
+      setValue("droppings_count", 20);
+      setValue("memo", null);
+    }
+  }, [existingRecord, selectedBirdId, selectedDate, isLoadingRecord, setValue]);
+
+  const handleFormSubmit = async (data: RecordFormData) => {
+    await onSubmit(data, existingRecord?.id);
+  };
+
+  const isEditMode = !!existingRecord;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>今日の記録</CardTitle>
+        <CardTitle>
+          {isEditMode ? "記録を編集" : "新しい記録"}
+          {isLoadingRecord && (
+            <span className="ml-2 text-sm text-muted-foreground">読込中...</span>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="bird_id">文鳥</Label>
             <Select
@@ -125,8 +161,8 @@ export function RecordForm({ birds, onSubmit, isSubmitting }: RecordFormProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "保存中..." : "記録する"}
+          <Button type="submit" className="w-full" disabled={isSubmitting || isLoadingRecord}>
+            {isSubmitting ? "保存中..." : isEditMode ? "更新する" : "記録する"}
           </Button>
         </form>
       </CardContent>

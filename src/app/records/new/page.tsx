@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { RecordForm } from "@/components/records/RecordForm";
@@ -11,12 +12,17 @@ import { RecordFormData } from "@/lib/schemas";
 export default function NewRecordPage() {
   const router = useRouter();
   const { birds, isLoading } = useBirds();
-  const { createRecord } = useRecords(null);
+  const { createRecord, updateRecord } = useRecords(null);
 
-  const handleSubmit = async (data: RecordFormData) => {
+  const handleSubmit = async (data: RecordFormData, existingRecordId?: string) => {
     try {
-      await createRecord.mutateAsync(data);
-      toast.success("記録を保存しました");
+      if (existingRecordId) {
+        await updateRecord.mutateAsync({ id: existingRecordId, data });
+        toast.success("記録を更新しました");
+      } else {
+        await createRecord.mutateAsync(data);
+        toast.success("記録を保存しました");
+      }
       router.push("/");
     } catch (error) {
       toast.error("エラーが発生しました");
@@ -40,9 +46,9 @@ export default function NewRecordPage() {
           <p className="text-muted-foreground mb-4">
             まず文鳥を登録してください
           </p>
-          <a href="/birds/new" className="text-primary hover:underline">
+          <Link href="/birds/new" className="text-primary hover:underline">
             文鳥を登録する
-          </a>
+          </Link>
         </div>
       </MainLayout>
     );
@@ -54,7 +60,7 @@ export default function NewRecordPage() {
         <RecordForm
           birds={birds}
           onSubmit={handleSubmit}
-          isSubmitting={createRecord.isPending}
+          isSubmitting={createRecord.isPending || updateRecord.isPending}
         />
       </div>
     </MainLayout>
