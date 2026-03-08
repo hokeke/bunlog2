@@ -9,6 +9,7 @@ import { FoodChart } from "@/components/dashboard/FoodChart";
 import { DroppingsChart } from "@/components/dashboard/DroppingsChart";
 import { PeriodSelector } from "@/components/dashboard/PeriodSelector";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { BirdSelector } from "@/components/dashboard/BirdSelector";
 import { useBirds } from "@/hooks/useBirds";
 import { useRecords } from "@/hooks/useRecords";
 import { Period, Bird } from "@/types/database";
@@ -62,8 +63,12 @@ export default function DashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">{selectedBird?.name}</h2>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <BirdSelector
+            birds={birds}
+            selectedBird={selectedBird}
+            onSelect={setSelectedBird}
+          />
           <PeriodSelector value={period} onChange={setPeriod} />
         </div>
 
